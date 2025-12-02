@@ -44,8 +44,8 @@ class Book(db.Model):
     # ========== 关系定义 ==========
     # 一本书可以有多条借阅记录
     borrow_records = db.relationship('BorrowRecord', backref='book',
-                                     lazy='dynamic', cascade='all, delete-orphan',
-                                     comment='该图书的借阅记录')
+                                     lazy='dynamic', cascade='all, delete-orphan'
+                                     )
 
     # ========== 计算属性 ==========
     @property

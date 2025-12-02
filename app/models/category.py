@@ -22,12 +22,12 @@ class Category(db.Model):
     # 自关联关系：一个分类可以有多个子分类，一个分类只能属于一个父分类
     # remote_side=[id] 指定关联的远程端是当前表的id字段
     parent = db.relationship('Category', remote_side=[id],
-                             backref=db.backref('children', lazy='dynamic'),
-                             comment='父分类关系')
+                             backref=db.backref('children', lazy='dynamic')
+                            )
 
     # 一个分类可以包含多本图书
     books = db.relationship('Book', backref='category', lazy='dynamic',
-                            cascade='all, delete-orphan', comment='该分类下的图书')
+                            cascade='all, delete-orphan')
 
     # ========== 业务方法 ==========
     def get_all_children(self):

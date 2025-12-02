@@ -7,9 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.models.borrow_record import BorrowRecord
-
-# 初始化SQLAlchemy对象
-db = SQLAlchemy()
+from app import db
 
 
 class User(db.Model):
@@ -38,8 +36,8 @@ class User(db.Model):
     # lazy='dynamic' 返回查询对象而不是直接加载所有记录
     # cascade='all, delete-orphan' 设置级联删除
     borrow_records = db.relationship('BorrowRecord', backref='user',
-                                     lazy='dynamic', cascade='all, delete-orphan',
-                                     comment='用户的借阅记录')
+                                     lazy='dynamic', cascade='all, delete-orphan'
+                                     )
 
     # ========== 属性方法 ==========
     @property
