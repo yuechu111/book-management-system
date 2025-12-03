@@ -1,0 +1,248 @@
+/* 登录页面样式 */
+:root {
+    --primary-color: #4a6bff;
+    --primary-hover: #3a5bef;
+    --light-bg: #f8f9fa;
+}
+
+/* 替换当前的 body 背景样式 */
+body {
+    background-image: url('../images/login_background.jpg'); /* 图片路径 */
+    background-size: cover; /* 覆盖整个页面 */
+    background-position: center center; /* 居中 */
+    background-repeat: no-repeat; /* 不重复 */
+    background-attachment: fixed; /* 固定背景 */
+    background-color: #f8f9fa; /* 备用颜色，图片加载失败时显示 */
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.login-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.logo {
+    font-size: 32px;
+    margin-bottom: 10px;
+    display: inline-block;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+}
+
+.login-header h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.login-header p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 5px 0 0;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.form-label i {
+    margin-right: 8px;
+    color: var(--primary-color);
+    width: 18px;
+}
+
+.user-type-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.user-type-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-type-btn:hover {
+    border-color: var(--primary-color);
+    background: #f8f9ff;
+}
+
+.user-type-btn.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.user-type-btn i {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.user-type-btn span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group-text {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-right: none;
+}
+
+.form-control {
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    height: 44px;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 107, 255, 0.15);
+}
+
+.btn-toggle-password {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-left: none;
+    color: #6c757d;
+    padding: 0 12px;
+    cursor: pointer;
+}
+
+.btn-login {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    width: 100%;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.btn-login:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 107, 255, 0.25);
+}
+
+.form-check {
+    margin-top: 15px;
+}
+
+.form-check-input {
+    width: 1.1em;
+    height: 1.1em;
+    margin-top: 0.1em;
+}
+
+.form-check-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.form-footer {
+    margin-top: 25px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.form-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin: 0 8px;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.error-message i {
+    margin-right: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+    .login-card {
+        max-width: 100%;
+    }
+    
+    .login-header {
+        padding: 20px;
+    }
+    
+    .login-body {
+        padding: 25px;
+    }
+    
+    .user-type-buttons {
+        flex-direction: column;
+    }
+}
