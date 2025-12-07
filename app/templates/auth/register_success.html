@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册成功 - 图书馆管理系统</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .success-container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: #28a745;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .username {
+            color: #4a6fa5;
+            font-weight: bold;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .countdown {
+            font-size: 1.5rem;
+            color: #dc3545;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .progress {
+            height: 10px;
+            margin: 20px 0;
+        }
+
+        .btn-container {
+            margin-top: 30px;
+        }
+
+        .btn-custom {
+            background: linear-gradient(to right, #4a6fa5, #2c3e50);
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .tips {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4a6fa5;
+            padding: 15px;
+            text-align: left;
+            margin-top: 25px;
+            border-radius: 5px;
+        }
+
+        .tips h6 {
+            color: #4a6fa5;
+            margin-bottom: 10px;
+        }
+
+        .tips ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .tips li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-container">
+            <!-- 成功图标 -->
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+
+            <!-- 标题 -->
+            <h2>注册成功！</h2>
+
+            <!-- 欢迎消息 -->
+            <div class="message">
+                欢迎 <span class="username">{{ username }}</span> 加入图书馆管理系统！
+                <br>
+                您的账号状态为：<span class="badge bg-warning">待审核</span>
+                <br>
+                管理员审核通过后即可正常使用。
+            </div>
+
+            <!-- 倒计时显示 -->
+            <div class="countdown" id="countdown">
+                3 秒后自动跳转
+            </div>
+
+            <!-- 进度条 -->
+            <div class="progress">
+                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                     role="progressbar"
+                     style="width: 100%"
+                     id="progressBar">
+                </div>
+            </div>
+
+            <!-- 按钮组 -->
+            <div class="btn-container">
+                <a href="{{ redirect_url }}" class="btn-custom">
+                    <i class="fas fa-sign-in-alt me-2"></i>立即登录
+                </a>
+
+            <!-- 温馨提示 -->
+            <div class="tips">
+                <h6><i class="fas fa-info-circle me-2"></i>温馨提示</h6>
+                <ul>
+                    <li>请妥善保管您的登录信息</li>
+                    <li>审核结果将通过邮件通知</li>
+                    <li>如有问题，请联系管理员</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for countdown and redirect -->
+    <script>
+        let timeLeft = {{ delay_time }};
+        const countdownElement = document.getElementById('countdown');
+        const progressBar = document.getElementById('progressBar');
+        const redirectUrl = "{{ redirect_url }}";
+
+        // 更新倒计时显示
+        function updateCountdown() {
+            countdownElement.textContent = timeLeft + " 秒后自动跳转";
+
+            // 更新进度条
+            const percentage = (({{ delay_time }} - timeLeft) / {{ delay_time }}) * 100;
+            progressBar.style.width = percentage + '%';
+
+            if (timeLeft <= 0) {
+                // 跳转到登录页面
+                window.location.href = redirectUrl;
+            } else {
+                timeLeft--;
+                setTimeout(updateCountdown, 1000);
+            }
+        }
+
+        // 立即跳转函数
+        function redirectNow() {
+            window.location.href = redirectUrl;
+        }
+
+        // 取消自动跳转
+        function cancelRedirect() {
+            clearTimeout(redirectTimer);
+            countdownElement.textContent = "自动跳转已取消";
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('progress-bar-animated');
+        }
+
+        // 开始倒计时
+        window.onload = function() {
+            setTimeout(updateCountdown, 1000);
+        };
+    </script>
+
+</body>
+</html>

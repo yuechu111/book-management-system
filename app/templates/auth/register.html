@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书馆管理系统 - 用户注册</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .register-container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .register-header {
+            background: linear-gradient(to right, #4a6fa5, #2c3e50);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .register-header h2 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .register-header i {
+            margin-right: 10px;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .form-control:focus {
+            border-color: #4a6fa5;
+            box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .password-strength {
+            height: 4px;
+            margin-top: 5px;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .strength-weak {
+            background-color: #dc3545;
+            width: 25%;
+        }
+
+        .strength-medium {
+            background-color: #ffc107;
+            width: 50%;
+        }
+
+        .strength-strong {
+            background-color: #28a745;
+            width: 75%;
+        }
+
+        .strength-very-strong {
+            background-color: #20c997;
+            width: 100%;
+        }
+
+        .submit-btn {
+            background: linear-gradient(to right, #4a6fa5, #2c3e50);
+            border: none;
+            color: white;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+
+        .login-link a {
+            color: #4a6fa5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            border-color: #badbcc;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                margin: 20px;
+                border-radius: 15px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+        }
+
+        .form-check {
+            padding-left: 0;
+        }
+
+        .form-check-input {
+            margin-right: 10px;
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="register-container">
+                    <!-- 头部 -->
+                    <div class="register-header">
+                        <h2><i class="fas fa-book-reader"></i>图书馆管理系统</h2>
+                        <p class="mb-0">加入我们，开启您的阅读之旅</p>
+                    </div>
+
+                    <!-- 注册表单 -->
+                    <div class="form-section">
+                        <!-- 成功消息显示 -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    {% if category == 'success' %}
+                                        <div class="alert-success">
+                                            <i class="fas fa-check-circle me-2"></i>{{ message }}
+                                        </div>
+                                    {% elif category == 'error' %}
+                                        <div class="alert alert-danger">
+                                            <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm">
+                            {{ register_form.hidden_tag() }}
+
+                            <!-- 用户名 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-user me-1"></i>{{ register_form.username.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-id-card"></i>
+                                    </span>
+                                    {{ register_form.username(class="form-control", placeholder="请输入用户名(2-50个字符)") }}
+                                </div>
+                                {% if register_form.username.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.username.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 邮箱 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>{{ register_form.email.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-at"></i>
+                                    </span>
+                                    {{ register_form.email(class="form-control", placeholder="example@domain.com") }}
+                                </div>
+                                {% if register_form.email.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.email.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 密码 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>{{ register_form.password.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    {{ register_form.password(class="form-control", id="password", placeholder="请输入密码(至少6位)") }}
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength" id="passwordStrength"></div>
+                                {% if register_form.password.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.password.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 确认密码 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>{{ register_form.confirm_password.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    {{ register_form.confirm_password(class="form-control", id="confirmPassword", placeholder="请再次输入密码") }}
+                                </div>
+                                {% if register_form.confirm_password.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.confirm_password.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 电话 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-phone me-1"></i>{{ register_form.phone.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-mobile-alt"></i>
+                                    </span>
+                                    {{ register_form.phone(class="form-control", placeholder="请输入联系电话(可选)") }}
+                                </div>
+                                {% if register_form.phone.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.phone.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 地址 -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-home me-1"></i>{{ register_form.address.label.text }}
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </span>
+                                    {{ register_form.address(class="form-control", placeholder="请输入联系地址(可选)") }}
+                                </div>
+                                {% if register_form.address.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.address.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 用户协议 -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ register_form.agree_terms(class="form-check-input") }}
+                                    {{ register_form.agree_terms.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-text mt-2">
+                                    阅读 <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">《用户协议》</a> 和
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">《隐私政策》</a>
+                                </div>
+                                {% if register_form.agree_terms.errors %}
+                                    <div class="error-message">
+                                        {% for error in register_form.agree_terms.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 提交按钮 -->
+                            <div class="mb-4">
+                                {{ register_form.submit(class="submit-btn") }}
+                            </div>
+
+                            <!-- 登录链接 -->
+                            <div class="login-link">
+                                已有账号？<a href="{{ url_for('auth.login') }}">立即登录</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户协议模态框 -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">用户协议</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>一、总则</h6>
+                    <p>欢迎使用图书馆管理系统。本协议是您与图书馆管理系统之间就使用本系统服务所订立的协议。</p>
+
+                    <h6>二、用户注册</h6>
+                    <p>1. 用户应提供真实、准确、完整的个人资料，并及时更新。</p>
+                    <p>2. 用户注册成功后，将获得一个用户账号，用户应妥善保管账号和密码。</p>
+
+                    <h6>三、用户权利与义务</h6>
+                    <p>1. 用户有权使用本系统提供的各项服务。</p>
+                    <p>2. 用户应遵守国家法律法规，不得利用本系统进行任何违法活动。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐私政策模态框 -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">隐私政策</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>一、信息收集</h6>
+                    <p>我们收集您主动提供的个人信息，包括但不限于：用户名、邮箱、联系电话等。</p>
+
+                    <h6>二、信息使用</h6>
+                    <p>1. 为您提供图书馆管理服务</p>
+                    <p>2. 发送系统通知和重要信息</p>
+                    <p>3. 改进我们的服务</p>
+
+                    <h6>三、信息安全</h6>
+                    <p>我们采取合理的安全措施保护您的个人信息，防止未经授权的访问、使用或泄露。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 密码显示/隐藏切换
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // 密码强度检查（仅用于UI显示，实际验证在Flask后端）
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrength');
+
+            // 重置样式
+            strengthBar.className = 'password-strength';
+
+            if (password.length === 0) {
+                return;
+            }
+
+            let strength = 0;
+
+            // 长度检查
+            if (password.length >= 6) strength += 1;
+            if (password.length >= 10) strength += 1;
+
+            // 复杂度检查（仅用于UI提示）
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+            // 设置强度显示
+            if (strength <= 2) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength === 3) {
+                strengthBar.classList.add('strength-medium');
+            } else if (strength === 4) {
+                strengthBar.classList.add('strength-strong');
+            } else {
+                strengthBar.classList.add('strength-very-strong');
+            }
+        });
+
+        // 自动为有错误的字段添加样式
+        document.addEventListener('DOMContentLoaded', function() {
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach(group => {
+                const errorMessage = group.querySelector('.error-message');
+                if (errorMessage) {
+                    const inputGroup = group.querySelector('.input-group');
+                    if (inputGroup) {
+                        inputGroup.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

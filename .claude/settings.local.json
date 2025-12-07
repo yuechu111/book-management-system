@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(set FLASK_APP=manage.py:*)",
+      "Bash(flask db init:*)",
+      "Bash(.venvScriptsflask:*)",
+      "Bash(source:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(sqlite3:*)",
+      "Bash(python:*)",
+      "Bash(..venvScriptsactivate)",
+      "Bash(pip install:*)",
+      "Bash(del:*)",
+      "Bash(set FLASK_APP=manage.py:app:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
