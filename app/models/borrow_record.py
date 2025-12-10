@@ -40,13 +40,6 @@ class BorrowRecord(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
                            onupdate=datetime.utcnow, comment='最后更新时间')
 
-    # ========== 表级约束 ==========
-    # 复合唯一约束：一个用户不能同时借阅同一本书多次
-    __table_args__ = (
-        db.UniqueConstraint('user_id', 'book_id', 'status',
-                            name='uix_user_book_status'),
-    )
-
     # ========== 计算属性 ==========
     @property
     def is_overdue(self):
