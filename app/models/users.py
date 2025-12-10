@@ -6,6 +6,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from app.models.book import Book
 from app.models.borrow_record import BorrowRecord
 from app import db
 
@@ -38,6 +39,81 @@ class User(db.Model):
     borrow_records = db.relationship('BorrowRecord', backref='user',
                                      lazy='dynamic', cascade='all, delete-orphan'
                                      )
+
+    # 添加收藏关系（多对多）
+    # 通过Favorite表建立与Book的关联
+    favorite_books = db.relationship(
+        'Book',
+        secondary='favorites',
+        primaryjoin="and_(User.id==Favorite.user_id, Favorite.is_active==True)",
+        secondaryjoin="Book.id==Favorite.book_id",
+        backref=db.backref('favorited_users', lazy='dynamic'),
+        lazy='dynamic'
+    )
+
+
+    # ========== 新增业务方法：收藏相关 ==========
+    def add_favorite(self, book_id, note=None):
+        """
+        用户收藏图书
+        :param book_id: 图书ID
+        :param note: 收藏备注
+        :return: 收藏记录对象
+        """
+        from app.models.favorite import Favorite
+        return Favorite.add_favorite(self.id, book_id, note)
+
+    def remove_favorite(self, book_id):
+        """
+        用户取消收藏
+        :param book_id: 图书ID
+        :return: True/False
+        """
+        from app.models.favorite import Favorite
+        return Favorite.remove_favorite(self.id, book_id)
+
+    def is_favorited(self, book_id):
+        """
+        检查用户是否收藏了某本书
+        :param book_id: 图书ID
+        :return: True/False
+        """
+        from app.models.favorite import Favorite
+        return Favorite.is_favorited(self.id, book_id) is not None
+
+    def get_favorites(self, page=1, per_page=20):
+        """
+        获取用户的收藏列表（分页）
+        :param page: 页码
+        :param per_page: 每页数量
+        :return: 分页查询对象
+        """
+        from app.models.favorite import Favorite
+        return Favorite.get_user_favorites(self.id, page, per_page)
+
+    def get_favorite_count(self):
+        """
+        获取用户的收藏数量
+        :return: 收藏数量
+        """
+        from app.models.favorite import Favorite
+        return Favorite.query.filter_by(
+            user_id=self.id,
+            is_active=True
+        ).count()
+
+    def get_favorite_books_by_category(self, category_id=None):
+        """
+        按分类获取收藏图书
+        :param category_id: 分类ID，None表示所有分类
+        :return: 图书列表
+        """
+        query = self.favorite_books
+
+        if category_id:
+            query = query.filter_by(category_id=category_id)
+
+        return query.order_by(Book.title).all()
 
     # ========== 属性方法 ==========
     @property

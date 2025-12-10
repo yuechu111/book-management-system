@@ -1,6 +1,9 @@
 import os
 from datetime import timedelta
 
+from flask_wtf import CSRFProtect
+
+
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-123'

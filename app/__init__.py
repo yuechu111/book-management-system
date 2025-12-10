@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
+
 from config import Config
 from datetime import datetime
 db = SQLAlchemy()
@@ -498,6 +500,7 @@ def create_app():
     #初始化
     db.init_app(app)
     migrate.init_app(app, db)
+    csrf = CSRFProtect(app)
 
     with app.app_context():
         db.create_all()
@@ -507,7 +510,7 @@ def create_app():
         create_default_books()
 
     from app.views.auth import auth_bp
-    from app.views.books import books_bp
+    from app.views.users import users_bp
     app.register_blueprint(auth_bp)  # 注册蓝图
-    app.register_blueprint(books_bp)  # 注册蓝图
+    app.register_blueprint(users_bp)  # 注册蓝图
     return app

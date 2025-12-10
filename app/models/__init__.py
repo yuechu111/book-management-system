@@ -3,6 +3,7 @@ from .admin import Admin
 from .book import Book
 from .category import Category
 from .borrow_record import BorrowRecord
+from .favorite import Favorite
 
 __all__ = [
     'User',
@@ -10,5 +11,6 @@ __all__ = [
     'Book',
     'Category',
     'BorrowRecord',
+    'Favorite',
 ]
 

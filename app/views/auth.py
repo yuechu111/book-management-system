@@ -19,10 +19,11 @@ def login():
             user = User.query.filter_by(username=user_account).first()
             if user and user.verify_password(user_password):
                 session.permanent = True
-                session['account'] = user.username
+                session['user_id'] = user.id
+                session['username'] = user.username
                 session['user_type'] = 'user'
                 # 登录成功逻辑
-                return redirect(url_for('books.homepage'))
+                return redirect(url_for('users.dashboard'))
             else:
                 # 登录失败逻辑
                 flash('用户账号或密码错误', 'danger')

@@ -114,6 +114,33 @@ class Book(db.Model):
         """
         return self.borrow_records.order_by(BorrowRecord.borrow_date.desc()).all()
 
+    def get_favorite_count(self):
+        """
+        获取本书的收藏数量
+        :return: 收藏数量
+        """
+        from app.models.favorite import Favorite
+        return Favorite.query.filter_by(
+            book_id=self.id,
+            is_active=True
+        ).count()
+
+    def is_favorited_by_user(self, user_id):
+        """
+        检查指定用户是否收藏了本书
+        :param user_id: 用户ID
+        :return: True/False
+        """
+        from app.models.favorite import Favorite
+        return Favorite.is_favorited(user_id, self.id) is not None
+
+    def get_favorited_users(self):
+        """
+        获取收藏本书的用户列表
+        :return: 用户列表
+        """
+        return [record.user for record in self.favorited_by_records.filter_by(is_active=True).all()]
+
     def __repr__(self):
         """对象字符串表示"""
         return f'<Book id:{self.id}, title:{self.title}, isbn:{self.isbn}>'
