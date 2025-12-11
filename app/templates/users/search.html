@@ -1,0 +1,211 @@
+{% extends "users/base.html" %}
+
+{% block title %}图书检索 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('users.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item active" aria-current="page">图书检索</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">图书检索</h1>
+    <p class="page-description">搜索图书馆中的图书资源，支持按书名、作者、ISBN检索</p>
+</div>
+
+<!-- 搜索表单 - 使用get方法 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('users.search') }}">
+            <div class="row g-3 align-items-end">
+                <!-- 搜索框 -->
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               name="q"
+                               value="{{ query }}"
+                               placeholder="输入书名、作者、ISBN等进行搜索...">
+                    </div>
+                </div>
+
+                <!-- 分类选择框 -->
+                <div class="col-md-4">
+                    <select class="form-select" name="category"
+                            style="height: 40px; width: 100%; padding: 5px 10px;">
+                        <option value="-1">全部分类</option>
+                        {% for parent_category in categories %}
+                            {% if parent_category.children %}
+                                <optgroup label="{{ parent_category.name }}">
+                                    <option value="{{ parent_category.id }}"
+                                            {% if selected_category == parent_category.id %}selected{% endif %}>
+                                        全部 {{ parent_category.name }}
+                                    </option>
+                                    {% for child in parent_category.children %}
+                                        <option value="{{ child.id }}"
+                                                {% if selected_category == child.id %}selected{% endif %}>
+                                            {{ child.name }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% else %}
+                                <option value="{{ parent_category.id }}"
+                                        {% if selected_category == parent_category.id %}selected{% endif %}>
+                                    {{ parent_category.name }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 搜索按钮 -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 搜索结果 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">搜索结果</h5>
+        <span class="text-muted">共找到 {{ books|length }} 本图书</span>
+    </div>
+    <div class="card-body">
+        {% if books %}
+        <div class="row">
+            {% for book in books %}
+            <div class="col-md-4 mb-4">
+                <div class="card book-card h-100">
+                    <div class="row g-0 h-100">
+                        <div class="col-4">
+                            <img src="{{ book.cover }}?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
+                                 class="img-fluid rounded-start h-100" 
+                                 alt="{{ book.title }}"
+                                 style="object-fit: cover;">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body h-100 d-flex flex-column">
+                                <h6 class="card-title">{{ book.title }}</h6>
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-user"></i> {{ book.author }}
+                                </p>
+                                <div class="mt-auto">
+                                    <span class="badge bg-light text-dark mb-2">{{ book.publisher }}</span>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <small class="text-muted">评分：{{ book.rating }}★</small><br>
+                                            <small class="text-muted">可借：{{ book.available_copies }}/{{ book.total_copies }}</small>
+                                        </div>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary borrow-btn" 
+                                                    data-id="{{ book.id }}"
+                                                    {% if book.available_copies == 0 %}disabled{% endif %}>
+                                                {% if book.available_copies == 0 %}已借完{% else %}借阅{% endif %}
+                                            </button>
+                                           <button class="btn btn-sm favorite-btn
+                                              {% if book.is_favorited_by_user(user_id) %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                                                data-id="{{ book.id }}">
+                                               <i class="fas fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">未找到相关图书</h5>
+            <p class="text-muted">请尝试其他关键词或分类</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 借阅按钮点击事件
+    $('.borrow-btn:not(:disabled)').click(function() {
+        const bookId = $(this).data('id');
+        const postData = {
+                book_id: bookId
+            };
+
+        {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        if (confirm('确定要借阅这本书吗？')) {
+            $.ajax({
+                url: "{{url_for('users.borrow_book')}}",
+                method: 'POST',
+                data:postData,
+                success: function(response) {
+                    if (response.success) {
+                        alert('借阅成功！请到我的借阅中查看');
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('借阅失败，请稍后重试');
+                }
+            });
+
+        }
+    });
+
+    // 收藏按钮点击事件
+    $('.favorite-btn').click(function() {
+        const bookId = $(this).data('id');
+        const button = $(this);
+        const postData = {
+                book_id: bookId
+            };
+
+        {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        $.ajax({
+            url: `{{url_for('users.my_favorite')}}`,
+            method: 'POST',
+            data:postData,
+            success: function(response) {
+                if (response.success) {
+                        if (response.operation === 'add') {
+                        // 收藏成功
+                        button.addClass('btn-danger').removeClass('btn-outline-danger');
+                        alert(response.message);
+                    } else if (response.operation === 'cancel') {
+                        // 取消收藏成功
+                        button.removeClass('btn-danger').addClass('btn-outline-danger');
+                        alert(response.message);
+                    }
+                } else {
+                    // 操作失败
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('操作失败，请稍后重试');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

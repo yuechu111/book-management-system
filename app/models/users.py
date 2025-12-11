@@ -10,7 +10,6 @@ from app.models.book import Book
 from app.models.borrow_record import BorrowRecord
 from app import db
 
-
 class User(db.Model):
     """
     用户表模型

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}图书管理系统 - 用户端{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="custom-navbar">
+        <div class="navbar-container">
+            <!-- 移动端菜单按钮 -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- 左侧Logo部分 -->
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <a href="{{ url_for('users.dashboard') }}" class="logo-text">
+                    图书管理系统
+                    <span class="logo-subtext d-block">用户端</span>
+                </a>
+            </div>
+
+            <!-- 右侧用户部分 -->
+            <div class="user-section">
+                <!-- 通知按钮 -->
+                <div class="user-menu">
+                    <button class="nav-action-btn position-relative" type="button" id="notificationBtn" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        {% if notifications and notifications|selectattr('read', 'equalto', False)|list|length > 0 %}
+                        <span class="notification-badge">{{ notifications|selectattr('read', 'equalto', False)|list|length }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBtn">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center">
+                            <strong>通知</strong>
+                            <small><a href="#" class="text-primary" id="markAllRead">全部标记为已读</a></small>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="notification-list" id="notificationList">
+                            {% if notifications %}
+                                {% for notification in notifications[:5] %}
+                                <div class="notification-item {% if not notification.read %}notification-unread{% endif %}" data-id="{{ notification.id }}">
+                                    <div class="notification-icon">
+                                        <i class="fas {{ notification.icon or 'fa-bell' }}"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">{{ notification.title }}</div>
+                                        <p class="mb-1">{{ notification.message }}</p>
+                                        <div class="notification-time">{{ notification.time }}</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center p-3 text-muted">
+                                    暂无通知
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item text-center text-primary">
+                            <i class="fas fa-list me-1"></i>查看所有通知
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 用户信息 -->
+                <div class="user-menu">
+                    <div class="user-info" id="userMenuBtn" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">{{ session.get('username') }}</div>
+                            <div class="user-role">
+                                {% if session.get('is_admin') %}
+                                    管理员
+                                {% else %}
+                                    普通用户
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuBtn">
+                        <a class="dropdown-item" href="{{url_for('users.my_profile')}}">
+                            <i class="fas fa-user-circle me-2"></i>个人资料
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cog me-2"></i>账户设置
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-question-circle me-2"></i>帮助中心
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 侧边导航菜单 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-avatar">
+                {% if session.get('avatar') %}
+                <img src="{{ session.avatar }}" alt="用户头像" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="sidebar-user-name">{{ session.get('username', '用户') }}</div>
+            <div class="sidebar-user-role">
+                {% if session.get('is_admin') %}
+                    管理员
+                {% else %}
+                    普通用户
+                {% endif %}
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <!-- 首页仪表盘 -->
+            <li class="menu-item">
+                <a href="{{ url_for('users.dashboard') }}" class="menu-link {% if request.endpoint == 'users.dashboard' %}active{% endif %}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">首页仪表盘</span>
+                </a>
+            </li>
+
+            <!-- 我的借阅 -->
+            <li class="menu-item">
+                <a href="{{ url_for('users.borrowing') }}" class="menu-link {% if request.endpoint == 'users.borrowing' %}active{% endif %}">
+                    <span class="menu-icon"><i class="fas fa-book-open"></i></span>
+                    <span class="menu-text">我的借阅</span>
+                    {% if active_borrows_count and active_borrows_count > 0 %}
+                    <span class="menu-badge">{{ active_borrows_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <!-- 图书检索 -->
+            <li class="menu-item">
+                <a href="{{ url_for('users.search') }}" class="menu-link {% if request.endpoint == 'users.search' %}active{% endif %}">
+                    <span class="menu-icon"><i class="fas fa-search"></i></span>
+                    <span class="menu-text">图书检索</span>
+                </a>
+            </li>
+
+            <!-- 我的收藏 -->
+            <li class="menu-item">
+                <a href="{{url_for('users.favorites')}}" class="menu-link {% if request.endpoint == 'users.favorites' %}active{% endif %}">
+                    <span class="menu-icon"><i class="fas fa-heart"></i></span>
+                    <span class="menu-text">我的收藏</span>
+                    {% if favorites_count and favorites_count > 0 %}
+                    <span class="menu-badge">{{ favorites_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="toggle-sidebar-btn" id="toggleSidebarBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- 主内容区域 -->
+    <main class="main-content" id="mainContent">
+        <!-- 面包屑导航 -->
+        {% block breadcrumb %}
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('users.dashboard') }}"><i class="fas fa-home"></i> 首页</a></li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </nav>
+        {% endblock %}
+
+        <!-- 页面内容 -->
+        <div class="page-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 JS 和 Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- 自定义JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -11,6 +11,7 @@ from sqlalchemy import or_
 
 from app import db
 from app.forms import LoginForm
+from app.forms.user import ProfileForm
 from app.models import User,Admin,Book,Category,BorrowRecord,Favorite
 
 users_bp = Blueprint('users', __name__,template_folder='templates/users')
@@ -542,6 +543,35 @@ def my_favorite():
             'success': False,
             'message': f'操作失败: {str(e)}'
         }), 500
+
+@users_bp.route('/my_profile', methods=['POST','GET'])
+def my_profile():
+    profile_form = ProfileForm()
+    current_user = get_current_user()
+    if request.method == 'GET':
+        profile_form.username.data = current_user.username  # 这里设置默认值
+        profile_form.email.data = current_user.email
+        profile_form.phone.data = current_user.phone
+        profile_form.address.data = current_user.address if current_user.address else ''
+
+        # POST 请求时的处理逻辑
+    if profile_form.validate_on_submit():
+        current_user.username = profile_form.username.data
+        current_user.email = profile_form.email.data
+        current_user.phone = profile_form.phone.data
+        current_user.address = profile_form.address.data
+        # 处理密码修改
+        if profile_form.new_password.data:
+            if not current_user.verify_password(profile_form.current_password.data):
+                flash('当前密码错误，无法修改密码', 'danger')
+                return render_template('users/my_profile.html',profile_form=profile_form)
+            flash('密码修改成功，请使用新密码登录', 'success')
+            current_user.password = profile_form.new_password.data  # 使用属性设置器自动哈希密码
+            db.session.commit()
+            return redirect(url_for('auth.login'))
+        flash("个人资料更新成功", "success")
+        db.session.commit()
+    return render_template('users/my_profile.html',profile_form=profile_form)
 
 def get_current_user():
     return User.query.get(session.get('user_id'))

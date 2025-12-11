@@ -1,0 +1,231 @@
+{% extends "users/base.html" %}
+
+{% block title %}个人资料 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('users.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item active" aria-current="page">个人资料</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">个人资料</h1>
+    <p class="page-description">查看和更新您的个人信息，包括姓名、电子邮件和联系方式。</p>
+</div>
+
+<div class="row" style="margin-left: 150px;">
+    <div class="col-lg-8">
+
+        <div class="card" style="width: 1000px;">
+            <div class="card-header">
+                <h4 class="card-title">编辑个人信息</h4>
+            </div>
+            <div class="card-body">
+            <form method="POST" action="{{ url_for('users.my_profile') }}" class="needs-validation" novalidate>
+                    {{ profile_form.hidden_tag() }}
+
+                    <div class="row">
+                        <!-- 用户名 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ profile_form.username.label.text }}</label>
+                            {{ profile_form.username(class="form-control" + (" is-invalid" if profile_form.username.errors else "")) }}
+                            {% if profile_form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in profile_form.username.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">您的账号显示名称</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 邮箱 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ profile_form.email.label.text }}</label>
+                            {{ profile_form.email(class="form-control" + (" is-invalid" if profile_form.email.errors else "")) }}
+                            {% if profile_form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in profile_form.email.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">用于登录和接收通知</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 电话 -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ profile_form.phone.label.text }}</label>
+                        {{ profile_form.phone(class="form-control" + (" is-invalid" if profile_form.phone.errors else "")) }}
+                        {% if profile_form.phone.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in profile_form.phone.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 地址 -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ profile_form.address.label.text }}</label>
+                        {{ profile_form.address(class="form-control" + (" is-invalid" if profile_form.address.errors else ""), rows="3") }}
+                        {% if profile_form.address.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in profile_form.address.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- 修改密码区域 -->
+                    <div class="password-section">
+                        <h5 class="mb-3">修改密码（可选）</h5>
+
+                        <!-- 当前密码 -->
+                        <div class="mb-3">
+                            <label class="form-label">{{ profile_form.current_password.label.text }}</label>
+                            {{ profile_form.current_password(class="form-control" + (" is-invalid" if profile_form.current_password.errors else "")) }}
+                            <div class="form-text">仅当您需要修改密码时填写</div>
+                            {% if profile_form.current_password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in profile_form.current_password.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 新密码 -->
+                        <div class="mb-3">
+                            <label class="form-label">{{ profile_form.new_password.label.text }}</label>
+                            {{ profile_form.new_password(class="form-control" + (" is-invalid" if profile_form.new_password.errors else "")) }}
+                            {% if profile_form.new_password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in profile_form.new_password.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 确认密码 -->
+                        <div class="mb-4">
+                            <label class="form-label">{{ profile_form.confirm_password.label.text }}</label>
+                            {{ profile_form.confirm_password(class="form-control" + (" is-invalid" if profile_form.confirm_password.errors else "")) }}
+                            {% if profile_form.confirm_password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in profile_form.confirm_password.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-between">
+                          {{ profile_form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('users.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>取消
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    </div>
+</div>
+
+<!-- 重置密码模态框 -->
+
+{% endblock %}
+
+{% block styles %}
+<style>
+.avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.password-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+.info-item:last-child {
+    border-bottom: none !important;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.card-header {
+    background-color: rgba(0,0,0,.02);
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.alert-sm {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 自动隐藏成功消息
+setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert-success');
+    alerts.forEach(alert => {
+        alert.style.transition = 'opacity 0.5s';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+    });
+}, 3000);
+
+// 密码显示/隐藏切换
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const input = this.previousElementSibling;
+        const icon = this.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+});
+
+</script>
+{% endblock %}

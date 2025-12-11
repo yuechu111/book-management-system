@@ -1,0 +1,269 @@
+{% extends "users/base.html" %}
+
+{% block title %}我的收藏 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('users.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item active" aria-current="page">我的收藏</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">我的收藏</h1>
+    <p class="page-description">查看和管理您收藏的图书，可以快速借阅或取消收藏</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('users.favorites') }}">
+            <div class="row g-3 align-items-end">
+                <!-- 搜索框 -->
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               name="q"
+                               value="{{ query }}"
+                               placeholder="输入书名、作者、ISBN等进行搜索...">
+                    </div>
+                </div>
+
+                <!-- 分类选择框 -->
+                <div class="col-md-4">
+                    <select class="form-select" name="category"
+                            style="height: 40px; width: 100%; padding: 5px 10px;">
+                        <option value="-1">全部分类</option>
+                        {% for parent_category in categories %}
+                            {% if parent_category.children %}
+                                <optgroup label="{{ parent_category.name }}">
+                                    <option value="{{ parent_category.id }}"
+                                            {% if selected_category == parent_category.id %}selected{% endif %}>
+                                        全部 {{ parent_category.name }}
+                                    </option>
+                                    {% for child in parent_category.children %}
+                                        <option value="{{ child.id }}"
+                                                {% if selected_category == child.id %}selected{% endif %}>
+                                            {{ child.name }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% else %}
+                                <option value="{{ parent_category.id }}"
+                                        {% if selected_category == parent_category.id %}selected{% endif %}>
+                                    {{ parent_category.name }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 搜索按钮 -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 收藏图书列表 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">收藏列表</h5>
+        <div class="form-check">
+
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if favorites_books and favorites_books|length > 0 %}
+        <div class="row" id="favoritesList">
+            {% for favorites_book in favorites_books %}
+            <div class="col-md-6 mb-4 favorite-item" 
+                 data-id="{{ favorites_book.book.id }}"
+                 data-category="{{ favorites_book.book.category }}"
+                 data-status="{{ 'available' if favorites_book.book.available_copies > 0 else 'borrowed' }}"
+                 data-title="{{ favorites_book.book.title }}"
+                 data-author="{{ favorites_book.book.author }}">
+                <div class="card book-card h-100">
+                    <div class="row g-0 h-100">
+                        <!-- 图书封面 -->
+                        <div class="col-4">
+                            <img src="{{ favorites_book.book.cover_url or 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}"
+                                 class="img-fluid rounded-start h-100" 
+                                 alt="{{ favorites_book.book.title }}"
+                                 style="object-fit: cover;">
+                        </div>
+                        
+                        <!-- 图书信息 -->
+                        <div class="col-8">
+                            <div class="card-body h-100 d-flex flex-column">
+                                <!-- 标题和选择框 -->
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ favorites_book.book.title }}</h6>
+                                    <div class="form-check">
+
+                                    </div>
+                                </div>
+                                
+                                <!-- 作者信息 -->
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-user"></i> {{ favorites_book.book.author }}
+                                </p>
+                                
+                                <!-- 分类标签 -->
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark">{{ favorites_book.book.publisher }}</span>
+                                    {% if favorites_book.book.available_copies > 0 %}
+                                    <span class="badge bg-success ms-1">可借阅</span>
+                                    {% else %}
+                                    <span class="badge bg-warning ms-1">已借出</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- 其他信息 -->
+                                <div class="mb-2 small text-muted">
+                                    <div>
+                                        <i class="fas fa-star text-warning"></i>
+                                        评分：{{ favorites_book.book.rating|default(4.5) }}
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-copy"></i>
+                                        可借：{{ favorites_book.book.available_copies }}/{{ favorites_book.book.total_copies }}
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="mt-auto">
+                                    <div class="d-flex gap-2">
+                                        {% if favorites_book.book.available_copies > 0 %}
+                                        <button class="btn btn-sm btn-primary borrow-btn flex-grow-1"
+                                                data-id="{{ favorites_book.book.id }}"
+                                                data-title="{{ favorites_book.book.title }}">
+                                            <i class="fas fa-book-open me-1"></i>借阅
+                                        </button>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-outline-secondary flex-grow-1" disabled>
+                                            <i class="fas fa-clock me-1"></i>等待可借
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-danger remove-btn"
+                                                data-id="{{ favorites_book.book.id }}"
+                                                data-title="{{ favorites_book.book.title }}">
+                                            <i class="fas fa-heart-broken"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <!-- 空状态 -->
+        <div class="text-center py-5">
+            <i class="fas fa-heart fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted mb-3">暂无收藏</h4>
+            <p class="text-muted mb-4">您还没有收藏任何图书，快去发现您喜欢的图书吧！</p>
+            <a href="{{ url_for('users.search') }}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>去发现图书
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    // 借阅按钮点击事件
+    $('.borrow-btn').click(function() {
+        const bookId = $(this).data('id');
+        const bookTitle = $(this).data('title');
+         const postData = {
+                book_id: bookId
+            };
+
+         {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        if (confirm('确定要借阅这本书吗？')) {
+            $.ajax({
+                url: "{{url_for('users.borrow_book')}}",
+                method: 'POST',
+                data:postData,
+                success: function(response) {
+                    if (response.success) {
+                        alert('借阅成功！请到我的借阅中查看');
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('借阅失败，请稍后重试');
+                }
+            });
+
+        }
+    });
+
+    // 移除收藏按钮点击事件
+    $('.remove-btn').click(function() {
+    const bookId = $(this).data('id');
+    const bookTitle = $(this).data('title');
+    const button = $(this);
+
+    if (confirm(`确定要从收藏中移除《${bookTitle}》吗？`)) {
+        // 准备请求数据
+        const postData = {
+            book_id: bookId
+        };
+
+
+        {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        // 发送AJAX请求
+        $.ajax({
+            url: "{{ url_for('users.my_favorite') }}",
+            method: 'POST',
+            data: postData,
+            success: function(response) {
+                console.log('删除收藏响应:', response);
+
+                if (response.success && response.operation === 'cancel') {
+                    // 取消收藏成功
+                    button.closest('.favorite-item').fadeOut(300, function() {
+                        $(this).remove();
+
+                        // 如果收藏列表为空，显示空状态
+                        if ($('.favorite-item').length === 0) {
+                            location.reload();
+                        }
+                    });
+
+                    alert(response.message || '已从收藏中移除');
+                } else {
+                    alert(response.message || '操作失败');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('请求失败:', xhr.responseText);
+                alert('请求失败，请稍后重试');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

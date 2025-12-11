@@ -1,0 +1,241 @@
+{% extends "users/base.html" %}
+
+{% block title %}我的借阅 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('users.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item active" aria-current="page">我的借阅</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">我的借阅</h1>
+    <p class="page-description">查看和管理您借阅的图书，包括当前借阅和借阅历史</p>
+</div>
+
+<!-- 借阅标签页 -->
+<div class="borrow-tabs mb-4">
+    <ul class="nav nav-tabs" id="borrowTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="borrowing-tab" data-bs-toggle="tab" data-bs-target="#borrowing" type="button" role="tab">
+                <i class="fas fa-book-open me-2"></i>借阅中
+                <span class="badge bg-danger ms-1">{{ active_borrows|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                <i class="fas fa-history me-2"></i>借阅历史
+                <span class="badge bg-secondary ms-1">{{ borrow_history|length }}</span>
+            </button>
+        </li>
+    </ul>
+</div>
+
+<div class="tab-content" id="borrowTabContent">
+    <!-- 借阅中标签页 -->
+    <div class="tab-pane fade show active" id="borrowing" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">当前借阅的图书</h5>
+            </div>
+            <div class="card-body">
+                {% if active_borrows %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                             <tr>
+                                <th>图书</th>
+                                <th>作者</th>
+                                <th>借阅日期</th>
+                                <th>到期日期</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                       <tbody>
+                            {% for borrow in active_borrows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ borrow.book.title }}</strong>
+                                </td>
+                                <td>{{ borrow.book.author }}</td>
+                                <td>{{ borrow.borrow_date }}</td>
+                                <td>
+                                    {% if borrow.is_overdue %}
+                                    <span class="text-danger">{{ borrow.due_date }}</span>
+                                    {% else %}
+                                    {{ borrow.due_date }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if borrow.is_overdue %}
+                                    <span class="status-badge status-overdue">已逾期</span>
+                                    {% else %}
+                                    <span class="status-badge status-borrowing">借阅中</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary renew-btn"
+                                            data-id="{{ borrow.id }}">
+                                        续借
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success return-btn"
+                                            data-id="{{ borrow.id }}">
+                                        归还
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">暂无借阅中的图书</h5>
+                    <p class="text-muted mb-4">去图书检索找找您感兴趣的图书吧</p>
+                    <a href="{{ url_for('users.search') }}" class="btn btn-primary">去借书</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 借阅历史标签页 -->
+    <div class="tab-pane fade" id="history" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">借阅历史记录</h5>
+            </div>
+            <div class="card-body">
+                {% if borrow_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>图书封面</th>
+                                <th>图书信息</th>
+                                <th>借阅信息</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in borrow_history %}
+                            <tr>
+                                <td style="width: 100px;">
+                                    <img src="{{ item.book.cover }}?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80"
+                                         alt="{{ item.book.title }}"
+                                         class="img-thumbnail"
+                                         style="width: 80px; height: 100px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1">{{ item.book.title }}</h6>
+                                    <p class="text-muted mb-1">{{ item.book.author }}</p>
+                                    <span class="badge bg-light text-dark">{{ item.book.description }}</span>
+                                </td>
+                                <td>
+                                    <div class="mb-1">
+                                        <small class="text-muted">借阅日期：</small>
+                                        <div>{{ item.borrow_date }}</div>
+                                    </div>
+                                    <div class="mb-1">
+                                        <small class="text-muted">归还日期：</small>
+                                        <div>{{ item.return_date }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.status == 0 %}
+                                    <span class="status-badge status-returned">借阅中</span>
+                                    {% elif item.status == 1%}
+                                    <span class="status-badge status-returned">已归还</span>
+                                    {% else %}
+                                    <span class="status-badge status-returned">已逾期</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">暂无借阅历史</h5>
+                    <p class="text-muted">您的借阅记录将在这里显示</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 续借按钮点击事件
+    $('.renew-btn').click(function() {
+        const borrowId = $(this).data('id');
+        const button = $(this);
+        const postData = {
+                borrow_id: borrowId
+                };
+
+        {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        if (confirm('确定要续借这本书吗？')) {
+            $.ajax({
+                url: "{{url_for('users.continue_borrow_book')}}",
+                method: 'POST',
+                data:postData,
+                success: function(response) {
+                    if (response.success) {
+                        alert('续借成功！新的到期日期：' + response.new_due_date);
+                        location.reload(); // 刷新页面
+                    } else {
+                        alert('续借失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('请求失败，请稍后重试');
+                }
+            });
+        }
+    });
+
+    // 归还按钮点击事件
+    $('.return-btn').click(function() {
+        const borrowId = $(this).data('id');
+        const button = $(this);
+        const postData = {
+                borrow_id: borrowId
+                };
+
+         {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        if (confirm('确定要归还这本书吗？')) {
+            $.ajax({
+                url: `{{url_for('users.return_book')}}`,
+                data: postData,
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('归还成功！');
+                        location.reload();
+                    } else {
+                        alert('归还失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('请求失败，请稍后重试');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
