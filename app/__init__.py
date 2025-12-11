@@ -511,6 +511,8 @@ def create_app():
 
     from app.views.auth import auth_bp
     from app.views.users import users_bp
+    from app.views.admin import admin_bp
     app.register_blueprint(auth_bp)  # 注册蓝图
-    app.register_blueprint(users_bp)  # 注册蓝图
+    app.register_blueprint(users_bp, url_prefix='/user')  # /user/dashboard
+    app.register_blueprint(admin_bp, url_prefix='/admin')  # /admin/dashboard
     return app

@@ -16,6 +16,7 @@ class Admin(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False, index=True, comment='管理员邮箱')
     password_hash = db.Column(db.String(255), nullable=False, comment='密码哈希值')
     real_name = db.Column(db.String(50), comment='真实姓名')
+
     role = db.Column(db.String(20), default='admin', comment='角色：admin-普通管理员，super_admin-超级管理员')
     status = db.Column(db.Integer, default=1, comment='状态：0-禁用，1-正常')
     last_login_at = db.Column(db.DateTime, comment='最后登录时间')

@@ -29,14 +29,14 @@ def login():
                 flash('用户账号或密码错误', 'danger')
         #管理员登录逻辑
         elif user_type == 'admin':
-            admin = Admin.query.filter_by(username=user_account, status=1,role='admin').first() or Admin.query.filter_by(username=user_account, status=1,role='super_admin').first()
+            admin = Admin.query.filter_by(username=user_account, status=1).first()
             if admin and admin.verify_password(user_password):
-                if admin.role == 'super_admin':
-                    # 超级管理员登录成功逻辑
-                    return "超级管理员登录成功"
-                elif admin.role == 'admin':
-                    # 普通管理员登录成功逻辑
-                    return "普通管理员登录成功"
+                session.permanent = True
+                session['user_id'] = admin.id
+                session['username'] = admin.username
+                session['is_admin'] = 'True'
+                # 登录成功逻辑
+                return redirect(url_for('admin.dashboard'))
             else:
                 # 登录失败逻辑
                 flash('管理员账号或密码错误', 'danger')
@@ -74,5 +74,18 @@ def register():
                                redirect_url=url_for('auth.login'),
                                delay_time=3)
     return render_template('auth/register.html',register_form=register_form)
+
+@auth_bp.route('/logout')
+def logout():
+    """退出登录"""
+    # 清除session
+    session.clear()
+
+    # 或者只清除特定键
+    # session.pop('user_id', None)
+    # session.pop('username', None)
+    # session.pop('is_admin', None)
+
+    return redirect(url_for('auth.login'))
 
 

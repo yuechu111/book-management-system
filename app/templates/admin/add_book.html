@@ -1,0 +1,302 @@
+{% extends "admin/base.html" %}
+
+{% block title %}添加图书 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.book_management') }}">图书管理</a></li>
+<li class="breadcrumb-item active" aria-current="page">添加图书</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">添加新书</h1>
+    <p class="page-description">添加新的图书到图书馆藏系统中。</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">图书信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_book') }}" enctype="multipart/form-data" novalidate>
+                    {{ book_form.hidden_tag() }}
+                    
+                    <!-- 基本图书信息 -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.title.label.text }}</label>
+                                {{ book_form.title(class="form-control" + (" is-invalid" if book_form.title.errors else ""), placeholder="请输入图书标题") }}
+                                {% if book_form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.title.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.isbn.label.text }}</label>
+                                {{ book_form.isbn(class="form-control" + (" is-invalid" if book_form.isbn.errors else ""), placeholder="978XXXXXXXXXX") }}
+                                {% if book_form.isbn.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.isbn.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.author.label.text }}</label>
+                                {{ book_form.author(class="form-control" + (" is-invalid" if book_form.author.errors else ""), placeholder="作者姓名") }}
+                                {% if book_form.author.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.author.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">{{ book_form.publisher.label.text }}</label>
+                                {{ book_form.publisher(class="form-control" + (" is-invalid" if book_form.publisher.errors else ""), placeholder="出版社") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.edition.label.text }}</label>
+                                {{ book_form.edition(class="form-control" + (" is-invalid" if book_form.edition.errors else ""), placeholder="版次") }}
+                                {% if book_form.edition.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.publisher.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.publish_date.label.text }}</label>
+                                {{ book_form.publish_date(class="form-control" + (" is-invalid" if book_form.publish_date.errors else ""), type="date") }}
+                                {% if book_form.publish_date.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.publish_date.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分类和库存 -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.category_id.label.text }}</label>
+                                {{ book_form.category_id(class="form-select" + (" is-invalid" if book_form.category_id.errors else "")) }}
+                                {% if book_form.category_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.category_id.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.available_copies.label.text }}</label>
+                                {{ book_form.available_copies(class="form-control" + (" is-invalid" if book_form.available_copies.errors else ""), type="number", min="1", value="1") }}
+                                {% if book_form.available_copies.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.available_copies.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.status.label.text }}</label>
+                                {{ book_form.status(class="form-select" + (" is-invalid" if book_form.status.errors else "")) }}
+                                {% if book_form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.status.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.language.label.text }}</label>
+                                {{ book_form.language(class="form-select" + (" is-invalid" if book_form.language.errors else "")) }}
+                                {% if book_form.category_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.language.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.available_copies.label.text }}</label>
+                                {{ book_form.available_copies(class="form-control" + (" is-invalid" if book_form.available_copies.errors else ""), type="number", min="1", value="1") }}
+                                {% if book_form.available_copies.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.available_copies.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">{{ book_form.status.label.text }}</label>
+                                {{ book_form.status(class="form-select" + (" is-invalid" if book_form.status.errors else "")) }}
+                                {% if book_form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in book_form.status.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 图书描述 -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ book_form.description.label.text }}</label>
+                        {{ book_form.description(class="book_form-control" + (" is-invalid" if book_form.description.errors else ""), rows="4", placeholder="请输入图书简介、内容摘要...") }}
+                        {% if book_form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in book_form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 图书封面 -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ book_form.cover_image.label.text }}</label>
+                        <div class="input-group">
+                            {{ book_form.cover_image(class="form-control" + (" is-invalid" if book_form.cover_image.errors else ""), accept="image/*") }}
+                            {% if book_form.cover_image.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in book_form.cover_image.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-text">支持 JPG, PNG 格式，最大 5MB</div>
+                        <div id="cover-preview" class="mt-3 d-none">
+                            <img id="preview-image" class="img-thumbnail" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>保存图书
+                        </button>
+                        <a href="{{ url_for('admin.book_management') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 侧边栏提示 -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="fas fa-lightbulb me-2"></i>添加提示</h6>
+            </div>
+            <div class="card-body">
+                <div class="info-box" style="
+                    background-color: #d1ecf1;
+                    border: 1px solid #bee5eb;
+                    border-radius: 0.25rem;
+                    color: #0c5460;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                ">
+                    <h6 style="
+                        color: #0c5460;
+                        margin-top: 0;
+                        margin-bottom: 0.5rem;
+                        font-size: 1rem;
+                        font-weight: 600;
+                    ">填写说明：</h6>
+                    <ul style="
+                        margin-bottom: 0;
+                        margin-top: 0;
+                        padding-left: 1.5rem;
+                    ">
+                        <li>标有 <span style="color: #dc3545;">*</span> 的为必填项</li>
+                        <li>ISBN格式为13位数字</li>
+                        <li>封面图片非必须，但建议上传</li>
+                        <li>库存数量至少为1</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box" style="
+                    background-color: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    border-radius: 0.25rem;
+                    color: #856404;
+                    padding: 1rem;
+                ">
+                    <h6 style="
+                        color: #856404;
+                        margin-top: 0;
+                        margin-bottom: 0.5rem;
+                        font-size: 1rem;
+                        font-weight: 600;
+                    ">注意事项：</h6>
+                    <ul style="
+                        margin-bottom: 0;
+                        margin-top: 0;
+                        padding-left: 1.5rem;
+                    ">
+                        <li>请确保ISBN号唯一</li>
+                        <li>出版日期应为实际出版时间</li>
+                        <li>添加后可随时修改信息</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
