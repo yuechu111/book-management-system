@@ -51,7 +51,6 @@ def borrowing():
     return render_template('users/borrowing.html',
                            active_borrows=active_borrows,
                            borrow_history=borrow_history
-
                            )
 
 @users_bp.route('/search',methods=['POST','GET'])
@@ -246,6 +245,7 @@ def borrow_book():
         new_borrow_record = BorrowRecord(
             user_id=user_id,
             book_id=book_id,
+            status=3
         )
 
         # 8. 设置应还日期
@@ -573,5 +573,26 @@ def my_profile():
         db.session.commit()
     return render_template('users/my_profile.html',profile_form=profile_form)
 
+@users_bp.route('/delete_book', methods=['POST','GET'])
+def delete_book():
+        # 1. 接收CSRF token并验证
+    csrf_token = request.form.get('csrf_token')
+    print(f"【1. CSRF验证】csrf_token: {csrf_token}")
+
+    if csrf_token:
+        try:
+            validate_csrf(csrf_token)
+            print("✅ CSRF验证通过")
+        except ValidationError as e:
+            print(f"❌ CSRF验证失败: {str(e)}")
+            return jsonify({'success': False, 'message': '安全验证失败'}), 400
+    else:
+        print("⚠️ 未提供CSRF token，跳过验证")
+    borrow_id = request.form.get('borrow_id')
+    borrow_record = BorrowRecord.query.get(borrow_id)
+    from app import db
+    db.session.delete(borrow_record)
+    db.session.commit()
+    return jsonify({'success':True,'message':'删除成功'})
 def get_current_user():
     return User.query.get(session.get('user_id'))

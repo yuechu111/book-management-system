@@ -1,0 +1,617 @@
+{% extends "admin/base.html" %}
+
+{% block title %}请求管理 - 图书管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">仪表盘</a></li>
+<li class="breadcrumb-item active" aria-current="page">请求管理</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">请求管理</h1>
+    <p class="page-description">处理读者注册、借阅、归还请求</p>
+</div>
+
+<!-- 请求统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-request card-register">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">读者注册请求</h6>
+                        <h2 class="card-title mb-0">{{ user_register_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-primary">
+                        <i class="fas fa-user-plus text-white"></i>
+                    </div>
+                </div>
+                <p class="card-text small text-muted">等待审核的新读者注册</p>
+                <a href="#register-requests" class="btn btn-outline-primary btn-sm">
+                    查看详情 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-request card-borrow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">借阅图书请求</h6>
+                        <h2 class="card-title mb-0">{{ user_borrow_request_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-warning">
+                        <i class="fas fa-book-reader text-white"></i>
+                    </div>
+                </div>
+                <p class="card-text small text-muted">等待处理的图书借阅申请</p>
+                <a href="#borrow-requests" class="btn btn-outline-warning btn-sm">
+                    查看详情 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-request card-return">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">归还图书请求</h6>
+                        <h2 class="card-title mb-0">{{ return_requests|length }}</h2>
+                    </div>
+                    <div class="icon-circle bg-success">
+                        <i class="fas fa-book text-white"></i>
+                    </div>
+                </div>
+                <p class="card-text small text-muted">等待确认的图书归还申请</p>
+                <a href="#return-requests" class="btn btn-outline-success btn-sm">
+                    查看详情 <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 读者注册请求 -->
+<div class="card mb-4" id="register-requests">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-user-plus me-2 text-primary"></i>读者注册请求
+            <span class="badge bg-primary ms-2">{{ user_register_count }}</span>
+        </h5>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkApproveModal">
+            <i class="fas fa-check-double me-1"></i>批量处理
+        </button>
+    </div>
+    <div class="card-body">
+        {% if user_register_requests %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="40">
+                            <input type="checkbox" class="form-check-input" id="select-all-register">
+                        </th>
+                        <th>申请人</th>
+                        <th>联系方式</th>
+                        <th>注册时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in user_register_requests %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="form-check-input register-checkbox" value="{{ request.id }}">
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <div class="avatar-placeholder bg-primary text-white">
+                                        {{ request.username[0]|upper if request.username else 'U' }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong>{{ request.username }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small">
+                                <div><i class="fas fa-envelope me-1"></i>{{ request.email }}</div>
+                                {% if request.phone %}
+                                <div class="mt-1"><i class="fas fa-phone me-1"></i>{{ request.phone }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-warning">待审核</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-success approve-btn" 
+                                        data-id="{{ request.id }}"
+                                        data-type="register"
+                                        data-username="{{ request.username }}">
+                                    <i class="fas fa-check"></i> 通过
+                                </button>
+                                <button class="btn btn-outline-danger reject-btn"
+                                        data-id="{{ request.id }}"
+                                        data-type="register"
+                                        data-username="{{ request.username }}">
+                                    <i class="fas fa-times"></i> 拒绝
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-user-check fa-3x text-muted mb-3"></i>
+            <p class="text-muted">暂无待处理的注册请求</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 借阅图书请求 -->
+<div class="card mb-4" id="borrow-requests">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-book-reader me-2 text-warning"></i>借阅图书请求
+            <span class="badge bg-warning ms-2">{{ user_borrow_request_count }}</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if user_borrow_requests %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>读者</th>
+                        <th>图书信息</th>
+                        <th>申请时间</th>
+                        <th>期望借期</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in user_borrow_requests %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-2">
+                                    <div class="avatar-placeholder bg-info text-white">
+                                        {{ request.user.username[0]|upper if request.user.username else 'U' }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong>{{ request.user.username }}</strong>
+                                    <div class="text-muted small">{{ request.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.book_information', book_id=request.book.id) }}" 
+                               class="text-decoration-none">
+                                <strong>{{ request.book.title }}</strong>
+                            </a>
+                            <div class="text-muted small">
+                                {{ request.book.author }} | ISBN: {{ request.book.isbn }}
+                            </div>
+                            <div class="small">
+                                库存: {{ request.book.available_copies }}/{{ request.book.total_copies }}
+                            </div>
+                        </td>
+                        <td>{{ request.borrow_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>30天</td>
+                        <td>
+                            <span class="badge bg-warning">待处理</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-success approve-borrow-btn"
+                                        data-id="{{ request.id }}"
+                                        data-user="{{ request.user.username }}"
+                                        data-book="{{ request.book.title }}">
+                                    <i class="fas fa-check"></i> 批准
+                                </button>
+                                <button class="btn btn-outline-danger reject-borrow-btn"
+                                        data-id="{{ request.id }}"
+                                        data-user="{{ request.user.username }}"
+                                        data-book="{{ request.book.title }}">
+                                    <i class="fas fa-times"></i> 拒绝
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+            <p class="text-muted">暂无待处理的借阅请求</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 归还图书请求 -->
+<div class="card mb-4" id="return-requests">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-book me-2 text-success"></i>归还图书请求
+            <span class="badge bg-success ms-2">{{ return_requests|length }}</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if return_requests %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>读者</th>
+                        <th>图书信息</th>
+                        <th>借出时间</th>
+                        <th>应还时间</th>
+                        <th>申请归还时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in return_requests %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-2">
+                                    <div class="avatar-placeholder bg-success text-white">
+                                        {{ request.user.username[0]|upper if request.user.username else 'U' }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong>{{ request.user.username }}</strong>
+                                    <div class="text-muted small">{{ request.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.book_information', book_id=request.book.id) }}"
+                               class="text-decoration-none">
+                                <strong>{{ request.book.title }}</strong>
+                            </a>
+                            <div class="text-muted small">
+                                {{ request.book.author }} | ISBN: {{ request.book.isbn }}
+                            </div>
+                        </td>
+                        <td>{{ request.borrow_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {{ request.due_date.strftime('%Y-%m-%d') }}
+                            {% if request.is_overdue() %}
+                            <div class="badge bg-danger mt-1">逾期</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ request.return_request_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-warning">待确认</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-success confirm-return-btn"
+                                        data-id="{{ request.id }}"
+                                        data-user="{{ request.user.username }}"
+                                        data-book="{{ request.book.title }}">
+                                    <i class="fas fa-check"></i> 确认归还
+                                </button>
+                                <button class="btn btn-outline-info"
+                                        onclick="viewReturnDetails({{ request.id }})">
+                                    <i class="fas fa-eye"></i> 检查
+                                </button>
+                                <button class="btn btn-outline-warning"
+                                        onclick="showDamageReport({{ request.id }})">
+                                    <i class="fas fa-exclamation-triangle"></i> 损坏报告
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+            <p class="text-muted">暂无待处理的归还请求</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 批量处理模态框 -->
+<div class="modal fade" id="bulkApproveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量处理注册请求</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>已选择 <span id="selected-count">0</span> 个注册请求</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="bulkAction" id="bulkApprove" value="approve" checked>
+                    <label class="form-check-label" for="bulkApprove">
+                        批量通过
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="bulkAction" id="bulkReject" value="reject">
+                    <label class="form-check-label" for="bulkReject">
+                        批量拒绝
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmBulkAction">确认处理</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.card-request {
+    border-top: 4px solid transparent;
+    transition: transform 0.2s;
+}
+
+.card-request:hover {
+    transform: translateY(-5px);
+}
+
+.card-register {
+    border-top-color: #0d6efd;
+}
+
+.card-borrow {
+    border-top-color: #ffc107;
+}
+
+.card-return {
+    border-top-color: #198754;
+}
+
+.icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    console.log('请求管理页面加载完成');
+    
+    // 全选/取消全选
+    $('#select-all-register').change(function() {
+        const isChecked = $(this).prop('checked');
+        $('.register-checkbox').prop('checked', isChecked);
+        updateSelectedCount();
+    });
+    
+    // 更新选中数量
+    function updateSelectedCount() {
+        const count = $('.register-checkbox:checked').length;
+        $('#selected-count').text(count);
+    }
+    
+    $('.register-checkbox').change(updateSelectedCount);
+    
+    // 注册请求操作
+    $('.approve-btn').click(function() {
+        const requestId = $(this).data('id');
+        const username = $(this).data('username');
+        
+        if (confirm(`确定要通过用户 "${username}" 的注册申请吗？`)) {
+            processRegisterRequest(requestId, 'approve');
+        }
+    });
+    
+    $('.reject-btn').click(function() {
+        const requestId = $(this).data('id');
+        const username = $(this).data('username');
+        
+        if (confirm(`确定要拒绝用户 "${username}" 的注册申请吗？`)) {
+            processRegisterRequest(requestId, 'reject');
+        }
+    });
+    
+    // 借阅请求操作
+    $('.approve-borrow-btn').click(function() {
+        const requestId = $(this).data('id');
+        const username = $(this).data('user');
+        const bookTitle = $(this).data('book');
+
+
+        if (confirm(`确定要批准用户 "${username}" 借阅《${bookTitle}》吗？`)) {
+            processBorrowRequest(requestId, 'approve');
+        }
+    });
+    
+    $('.reject-borrow-btn').click(function() {
+        const requestId = $(this).data('id');
+        const username = $(this).data('user');
+        const bookTitle = $(this).data('book');
+        
+        if (confirm(`确定要拒绝用户 "${username}" 借阅《${bookTitle}》吗？`)) {
+            processBorrowRequest(requestId, 'reject');
+        }
+    });
+    
+    // 归还请求操作
+    $('.confirm-return-btn').click(function() {
+        const requestId = $(this).data('id');
+        const username = $(this).data('user');
+        const bookTitle = $(this).data('book');
+        
+        if (confirm(`确定要确认用户 "${username}" 已归还《${bookTitle}》吗？`)) {
+            processReturnRequest(requestId, 'confirm');
+        }
+    });
+    
+    // 批量处理
+    $('#confirmBulkAction').click(function() {
+        const selectedIds = [];
+        $('.register-checkbox:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+        
+        if (selectedIds.length === 0) {
+            alert('请先选择要处理的请求');
+            return;
+        }
+        
+        const action = $('input[name="bulkAction"]:checked').val();
+        const actionText = action === 'approve' ? '通过' : '拒绝';
+        
+        if (confirm(`确定要批量${actionText} ${selectedIds.length} 个注册请求吗？`)) {
+            bulkProcessRequests(selectedIds, action);
+        }
+    });
+    
+    // 请求处理函数
+    function processRegisterRequest(requestId, action) {
+        $.ajax({
+            url: "{{url_for('admin.process_register')}}",
+            method: 'POST',
+            data: {
+                csrf_token: '{{ csrf_token() }}',
+                request_id: requestId,
+                action: action
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('处理成功');
+                    location.reload();
+                } else {
+                    alert(response.message || '处理失败');
+                }
+            },
+            error: function() {
+                alert('请求失败，请稍后重试');
+            }
+        });
+    }
+    
+    function processBorrowRequest(requestId, action) {
+        $.ajax({
+            url: "{{url_for('admin.process_borrow_book')}}",
+            method: 'POST',
+            data: {
+                csrf_token: '{{ csrf_token() }}'
+                , request_id: requestId,
+                action: action
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert("操作 成功")
+                    location.reload();
+                } else {
+                    alert(response.message || '处理失败');
+                }
+            },
+            error: function() {
+                alert('请求失败，请稍后重试');
+            }
+        });
+    }
+    
+    function processReturnRequest(requestId, action) {
+        $.ajax({
+            url: `/admin/return-requests/${requestId}/${action}`,
+            method: 'POST',
+            data: {
+                csrf_token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message || '处理失败');
+                }
+            },
+            error: function() {
+                alert('请求失败，请稍后重试');
+            }
+        });
+    }
+    
+    function bulkProcessRequests(ids, action) {
+        $.ajax({
+            url: "{{url_for('admin.bulk_process_register')}}",
+            method: 'POST',
+            data: {
+                csrf_token: '{{ csrf_token() }}',
+                request_ids: ids,
+                action: action
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('批量处理成功');
+                    location.reload();
+                } else {
+                    alert(response.message || '批量处理失败');
+                }
+            },
+            error: function() {
+                alert('批量处理请求失败');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

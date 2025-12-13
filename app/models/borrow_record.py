@@ -24,7 +24,7 @@ class BorrowRecord(db.Model):
     return_date = db.Column(db.DateTime, comment='实际归还日期')
 
     # ========== 状态字段 ==========
-    status = db.Column(db.Integer, default=0, comment='状态：0-借阅中，1-已归还，2-逾期')
+    status = db.Column(db.Integer, default=0, comment='状态：0-借阅中，1-已归还，2-逾期，3-借阅图书请求,4-拒绝借阅请求')
 
     # ========== 续借信息字段 ==========
     renew_times = db.Column(db.Integer, default=0, comment='续借次数')

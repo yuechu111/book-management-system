@@ -136,7 +136,7 @@
                                 <th>应还时间</th>
                                 <th>实际归还</th>
                                 <th>状态</th>
-                                <th>操作</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -158,25 +158,19 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if record.returned %}
+                                    {% if record.return_date %}
                                     {{ record.return_date.strftime('%Y-%m-%d') if record.return_date else '已归还' }}
                                     {% else %}
                                     <span class="text-muted">未归还</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if record.returned %}
+                                    {% if not record.is_overdue %}
+                                    <span class="badge bg-success">已逾期</span>
+                                    {% elif record.status == 1 %}
                                     <span class="badge bg-success">已归还</span>
                                     {% else %}
-                                    <span class="badge bg-warning">借阅中</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if not record.returned %}
-                                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                                            onclick="returnBook({{ record.id }})">
-                                        <i class="fas fa-undo me-1"></i>确认归还
-                                    </button>
+                                     <span class="badge bg-warning">借阅中</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -239,70 +233,6 @@
 
 {% block scripts %}
 <script>
-// 确认归还
-function returnBook(borrowId) {
-    if (confirm('确认该用户已归还图书？')) {
-        fetch(`/admin/borrows/${borrowId}/return`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message || '操作失败');
-            }
-        });
-    }
-}
-
-// 删除确认
-function confirmDelete(bookId, bookTitle) {
-    if (confirm(`确定要删除图书《${bookTitle}》吗？\n\n此操作将：\n• 删除图书信息\n• 删除所有借阅记录\n• 不可恢复`)) {
-        fetch(`/admin/books/${bookId}/delete`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = "{{ url_for('admin.manage_books') }}";
-            } else {
-                alert(data.message || '删除失败');
-            }
-        });
-    }
-}
-
-// 打印功能
-function printBookInfo() {
-    const printContent = document.querySelector('.col-lg-8').innerHTML;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <html>
-            <head>
-                <title>{{ book.title }} - 图书信息</title>
-                <style>
-                    body { font-family: Arial, sans-serif; }
-                    .book-cover-lg { max-width: 150px; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { padding: 8px; border: 1px solid #ddd; }
-                </style>
-            </head>
-            <body>
-                <h1>{{ book.title }}</h1>
-                ${printContent}
-                <script>window.print();</script>
-            </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
 
 // 图表初始化
 document.addEventListener('DOMContentLoaded', function() {

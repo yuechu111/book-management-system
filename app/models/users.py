@@ -24,7 +24,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False, comment='密码哈希值，存储加密后的密码')
     phone = db.Column(db.String(20), comment='联系电话')
     address = db.Column(db.String(200), comment='联系地址')
-    status = db.Column(db.Integer, default=1, comment='用户状态：0-禁用，1-正常，2-待审核')
+    status = db.Column(db.Integer, default=1, comment='用户状态：0-禁用，1-正常，2-待审核,3-审核未通过')
     last_login_at = db.Column(db.DateTime, comment='最后登录时间')
     created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
@@ -145,7 +145,8 @@ class User(db.Model):
         获取用户当前正在借阅的图书
         :return: 借阅中的记录查询对象
         """
-        return self.borrow_records.filter_by(status=0).all()
+        return self.borrow_records.filter(
+            BorrowRecord.status.in_([0, 3,4])).all()
 
     def has_overdue_books(self):
         """
@@ -163,7 +164,12 @@ class User(db.Model):
         获取用户的借阅历史
         :return: 所有借阅记录列表（包括已归还）
         """
-        return self.borrow_records.order_by(BorrowRecord.borrow_date.desc()).all()
+        return self.borrow_records.filter(
+            BorrowRecord.status != 4,
+            BorrowRecord.status != 3
+        ).order_by(
+            BorrowRecord.borrow_date.desc()
+        ).all()
 
     def __repr__(self):
         """对象字符串表示，便于调试"""

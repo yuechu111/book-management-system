@@ -18,7 +18,7 @@
     <ul class="nav nav-tabs" id="borrowTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="borrowing-tab" data-bs-toggle="tab" data-bs-target="#borrowing" type="button" role="tab">
-                <i class="fas fa-book-open me-2"></i>借阅中
+                <i class="fas fa-book-open me-2"></i>借阅信息
                 <span class="badge bg-danger ms-1">{{ active_borrows|length }}</span>
             </button>
         </li>
@@ -59,22 +59,29 @@
                                     <strong>{{ borrow.book.title }}</strong>
                                 </td>
                                 <td>{{ borrow.book.author }}</td>
-                                <td>{{ borrow.borrow_date }}</td>
+                                <td>{{ borrow.borrow_date.strftime('%Y年%m月%d日 %H:%M') }}</td>
                                 <td>
+                                    {% if borrow.status !=4 %}
                                     {% if borrow.is_overdue %}
-                                    <span class="text-danger">{{ borrow.due_date }}</span>
+                                    <span class="text-danger">{{ borrow.due_date.strftime('%Y年%m月%d日 %H:%M') }}</span>
                                     {% else %}
-                                    {{ borrow.due_date }}
+                                    {{ borrow.due_date.strftime('%Y年%m月%d日 %H:%M') }}
+                                    {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if borrow.is_overdue %}
                                     <span class="status-badge status-overdue">已逾期</span>
+                                    {% elif borrow.status == 3 %}
+                                    <span class="status-badge status-overdue">审核中</span>
+                                    {% elif borrow.status == 4 %}
+                                    <span class="status-badge status-overdue">审核不通过</span>
                                     {% else %}
                                     <span class="status-badge status-borrowing">借阅中</span>
                                     {% endif %}
                                 </td>
                                 <td>
+                                     {% if borrow.status !=4 and borrow.status !=3 %}
                                     <button class="btn btn-sm btn-outline-primary renew-btn"
                                             data-id="{{ borrow.id }}">
                                         续借
@@ -83,7 +90,15 @@
                                             data-id="{{ borrow.id }}">
                                         归还
                                     </button>
+                                     {% endif %}
+                                    {% if borrow.status ==4 %}
+                                    <button class="btn btn-sm btn-outline-success delete-btn"
+                                            data-id="{{ borrow.id }}">
+                                        删除
+                                    </button>
+                                    {% endif %}
                                 </td>
+
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -236,6 +251,39 @@ $(document).ready(function() {
             });
         }
     });
+
+    $('.delete-btn').click(function() {
+        const borrowId = $(this).data('id');
+        const button = $(this);
+        const postData = {
+                borrow_id: borrowId
+                };
+
+         {% if csrf_token is defined %}
+        postData.csrf_token = "{{ csrf_token() }}";
+        {% endif %}
+
+        if (confirm('确定要删除这条记录吗？')) {
+            $.ajax({
+                url: `{{url_for('users.delete_book')}}`,
+                data: postData,
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('删除成功！');
+                        location.reload();
+                    } else {
+                        alert('删除失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('请求失败，请稍后重试');
+                }
+            });
+        }
+    });
+
 });
+
 </script>
 {% endblock %}

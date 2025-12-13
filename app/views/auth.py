@@ -1,3 +1,4 @@
+from alembic.util import status
 from flask import Blueprint, render_template, flash, url_for, session
 from werkzeug.utils import redirect
 
@@ -17,6 +18,12 @@ def login():
         #普通用户登录逻辑
         if user_type == 'user':
             user = User.query.filter_by(username=user_account).first()
+            if user.status == 0:
+                flash("账号已经被禁用，请练习管理员处理",'warning')
+                return render_template('auth/login.html', login_form=login_form)
+            elif user.status == 2:
+                flash("账号还在审核，请等待",'warning')
+                return render_template('auth/login.html', login_form=login_form)
             if user and user.verify_password(user_password):
                 session.permanent = True
                 session['user_id'] = user.id
