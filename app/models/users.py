@@ -3,6 +3,8 @@
 使用Flask-SQLAlchemy ORM框架
 """
 from datetime import datetime
+
+import pytz
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -26,9 +28,9 @@ class User(db.Model):
     address = db.Column(db.String(200), comment='联系地址')
     status = db.Column(db.Integer, default=1, comment='用户状态：0-禁用，1-正常，2-待审核,3-审核未通过')
     last_login_at = db.Column(db.DateTime, comment='最后登录时间')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow, comment='最后更新时间，自动更新')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='创建时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
+                           onupdate=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='最后更新时间，自动更新')
 
     # ========== 关系定义 ==========
     # 一个用户可以有多条借阅记录

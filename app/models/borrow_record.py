@@ -1,13 +1,15 @@
+import pytz
+
 from app import db
 from datetime import datetime
 
 class BorrowRecord(db.Model):
+
     """
     借阅记录表模型
     存储用户借阅图书的详细记录
     """
     __tablename__ = 'borrow_records'  # 数据库表名
-
     # ========== 主键字段 ==========
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='借阅记录ID，主键，自增长')
 
@@ -18,7 +20,9 @@ class BorrowRecord(db.Model):
                         nullable=False, index=True, comment='图书ID')
 
     # ========== 借阅时间字段 ==========
-    borrow_date = db.Column(db.DateTime, default=datetime.utcnow,
+
+
+    borrow_date = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
                             nullable=False, comment='借书日期')
     due_date = db.Column(db.DateTime, nullable=False, comment='应还日期')
     return_date = db.Column(db.DateTime, comment='实际归还日期')
