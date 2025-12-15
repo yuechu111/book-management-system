@@ -1,3 +1,5 @@
+import pytz
+
 from app import db
 from datetime import datetime
 
@@ -14,9 +16,9 @@ class Category(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), default=0, comment='父分类ID，0表示顶级分类')
     description = db.Column(db.Text, comment='分类描述')
     sort_order = db.Column(db.Integer, default=0, comment='排序序号，数字越小越靠前')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow, comment='最后更新时间')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='创建时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
+                           onupdate=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='最后更新时间')
 
     # ========== 关系定义 ==========
     # 自关联关系：一个分类可以有多个子分类，一个分类只能属于一个父分类

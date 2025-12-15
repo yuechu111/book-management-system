@@ -2,6 +2,8 @@
 收藏关联表模型
 存储用户收藏图书的关系
 """
+import pytz
+
 from app import db
 from datetime import datetime
 
@@ -30,9 +32,9 @@ class Favorite(db.Model):
     is_active = db.Column(db.Boolean, default=True, comment='是否有效收藏：True-有效，False-已取消')
 
     # ========== 时间字段 ==========
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='收藏时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow, comment='最后更新时间')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='收藏时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
+                           onupdate=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='最后更新时间')
 
     # ========== 表级约束 ==========
     # 复合唯一约束：一个用户不能重复收藏同一本书

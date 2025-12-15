@@ -1,3 +1,5 @@
+import pytz
+
 from app import db
 from datetime import datetime
 
@@ -37,9 +39,9 @@ class Book(db.Model):
     status = db.Column(db.Integer, default=1, comment='状态：0-下架，1-正常，2-维护中')
 
     # ========== 时间字段 ==========
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow, comment='最后更新时间')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='创建时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
+                           onupdate=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='最后更新时间')
 
     # ========== 关系定义 ==========
     # 一本书可以有多条借阅记录

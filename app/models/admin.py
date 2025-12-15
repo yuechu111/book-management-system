@@ -1,3 +1,4 @@
+import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
@@ -20,9 +21,9 @@ class Admin(db.Model):
     role = db.Column(db.String(20), default='admin', comment='角色：admin-普通管理员，super_admin-超级管理员')
     status = db.Column(db.Integer, default=1, comment='状态：0-禁用，1-正常')
     last_login_at = db.Column(db.DateTime, comment='最后登录时间')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow, comment='最后更新时间')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='创建时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Shanghai')),
+                           onupdate=lambda: datetime.now(pytz.timezone('Asia/Shanghai')), comment='最后更新时间')
 
     # ========== 属性方法 ==========
     @property
