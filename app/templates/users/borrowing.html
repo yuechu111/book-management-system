@@ -151,11 +151,15 @@
                                 <td>
                                     <div class="mb-1">
                                         <small class="text-muted">借阅日期：</small>
-                                        <div>{{ item.borrow_date }}</div>
+                                        <div>{{ item.borrow_date.strftime('%Y年%m月%d日 %H:%M') }}</div>
                                     </div>
                                     <div class="mb-1">
                                         <small class="text-muted">归还日期：</small>
-                                        <div>{{ item.return_date }}</div>
+                                        {% if item.return_date == None %}
+                                        <div>None</div>
+                                        {% else %}
+                                        <div>{{ item.return_date.strftime('%Y年%m月%d日 %H:%M')  }}</div>
+                                        {% endif %}
                                     </div>
                                 </td>
                                 <td>
