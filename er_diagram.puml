@@ -1,0 +1,152 @@
+@startuml Library Management System E-R Diagram
+
+!theme plain
+
+skinparam {
+    BackgroundColor white
+    ArrowColor #666666
+    BorderColor #666666
+    InstanceAttributeFontStyle bold
+}
+
+title 图书管理系统 E-R 图
+
+rectangle "用户管理" as User {
+    entity Users {
+        *id int PK "用户ID"
+        --
+        username varchar(50) "用户名"
+        email varchar(100) "邮箱"
+        password_hash varchar(255) "密码"
+        phone varchar(20) "电话"
+        address varchar(200) "地址"
+        status int "状态"
+        --
+        last_login_at datetime "最后登录"
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+rectangle "管理员管理" as Admin {
+    entity Admins {
+        *id int PK "管理员ID"
+        --
+        username varchar(50) "用户名"
+        email varchar(100) "邮箱"
+        password_hash varchar(255) "密码"
+        real_name varchar(50) "真实姓名"
+        role varchar(20) "角色"
+        status int "状态"
+        --
+        last_login_at datetime "最后登录"
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+rectangle "图书管理" as Book {
+    entity Books {
+        *id int PK "图书ID"
+        isbn varchar(20) "ISBN"
+        title varchar(200) "标题"
+        author varchar(100) "作者"
+        publisher varchar(100) "出版社"
+        publish_date date "出版日期"
+        edition varchar(50) "版次"
+        language varchar(20) "语言"
+        pages int "页数"
+        price decimal(10,2) "价格"
+        cover_image varchar(255) "封面"
+        description text "描述"
+        --
+        total_copies int "总副本"
+        available_copies int "可用副本"
+        category_id int FK "分类ID"
+        status int "状态"
+        --
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+rectangle "分类管理" as Category {
+    entity Categories {
+        *id int PK "分类ID"
+        --
+        name varchar(100) "分类名称"
+        parent_id int FK "父分类ID"
+        description text "描述"
+        sort_order int "排序"
+        --
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+rectangle "借阅管理" as Borrow {
+    entity BorrowRecords {
+        *id int PK "借阅记录ID"
+        --
+        user_id int FK "用户ID"
+        book_id int FK "图书ID"
+        borrow_date datetime "借书日期"
+        due_date datetime "应还日期"
+        return_date datetime "实际归还"
+        status int "状态"
+        renew_times int "续借次数"
+        last_renew_date datetime "最后续借"
+        --
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+rectangle "收藏管理" as Favorite {
+    entity Favorites {
+        *id int PK "收藏记录ID"
+        --
+        user_id int FK "用户ID"
+        book_id int FK "图书ID"
+        note varchar(200) "备注"
+        sort_order int "排序"
+        is_active boolean "是否有效"
+        --
+        created_at datetime "创建时间"
+        updated_at datetime "更新时间"
+    }
+}
+
+' 关系定义
+Users ||--o{ BorrowRecords : "1..N"
+Users ||--|{ Favorites : "1..N"
+Books ||--o{ BorrowRecords : "1..N"
+Books ||--|{ Favorites : "1..N"
+Books }o--|| Categories : "N..1"
+Categories ||--o{ Categories : "1..N (自关联)"
+Categories ||--o{ Books : "1..N"
+
+' 唯一约束说明
+note right of Favorites
+  用户ID + 图书ID 唯一约束
+  防止重复收藏
+end note
+
+' 状态说明
+note left of BorrowRecords
+  状态说明：
+  0-借阅中
+  1-已归还
+  2-逾期
+  3-请求中
+  4-拒绝
+end note
+
+' 分类层级说明
+note right of Categories
+  分类层级：
+  parent_id=0 表示顶级分类
+  支持无限层级
+end note
+
+@enduml

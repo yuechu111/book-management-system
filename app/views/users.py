@@ -178,12 +178,15 @@ def favorites():
 
     # 获取收藏记录
     favorites_books = favorites_query.all()
-
+    borrow_query = BorrowRecord.query
     return render_template('users/favorites.html',
                            favorites_books=favorites_books,
                            categories=categories,
                            query=query,
-                           selected_category=category_id)
+                           selected_category=category_id,
+                           borrow_query=borrow_query,
+                           user_id=user_id
+                           )
 
 @users_bp.route('/borrow_book', methods=['POST'])
 def borrow_book():
