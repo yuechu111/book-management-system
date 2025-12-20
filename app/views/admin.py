@@ -1,7 +1,8 @@
+from functools import wraps
 from time import sleep
 
 
-from flask import Blueprint, render_template, jsonify, request, flash, url_for
+from flask import Blueprint, render_template, jsonify, request, flash, url_for, session
 from sqlalchemy.sql.elements import or_
 from werkzeug.utils import redirect
 
@@ -11,7 +12,22 @@ from app.forms import BookForm
 
 admin_bp = Blueprint('admin', __name__,template_folder='templates/admin')
 
+def login_required(f):
+    """
+    简单的登录验证装饰器
+    仅检查session中是否有user_id
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # 检查session中是否有user_id
+        if 'user_id' not in session:
+            # 重定向到登录页面，并传递当前URL作为next参数
+            return redirect(url_for('auth.login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @admin_bp.route('/dashboard',methods=['POST','GET'])
+@login_required
 def dashboard():
     book_query = Book.query
     user_query = User.query
@@ -23,6 +39,7 @@ def dashboard():
                            )
 
 @admin_bp.route('/book_management',methods=['POST','GET'])
+@login_required
 def book_management():
     book_query = Book.query
     if request.method == 'GET':
@@ -73,6 +90,7 @@ def book_management():
                            )
 
 @admin_bp.route('/add_book',methods=['POST','GET'])
+@login_required
 def add_book():
     book_form = BookForm()
     # 动态设置分类选择字段的选项
@@ -125,6 +143,7 @@ def add_book():
                            book_form=book_form)
 
 @admin_bp.route('/book_information/<int:book_id>',methods=['POST','GET'])
+@login_required
 def book_information(book_id):
     book = Book.query.get(book_id)
     borrow_book_count = BorrowRecord.query.filter_by(book_id=book_id).count()
@@ -136,6 +155,7 @@ def book_information(book_id):
                            )
 
 @admin_bp.route('/user_management)',methods=['POST','GET'])
+@login_required
 def user_management():
     user_query = User.query
 
@@ -171,6 +191,7 @@ def user_management():
                            )
 
 @admin_bp.route('/user_profile/<int:user_id>',methods=['POST','GET'])
+@login_required
 def user_profile(user_id):
     user_id = int(user_id)
     user = User.query.get(user_id)
@@ -185,6 +206,7 @@ def user_profile(user_id):
                            )
 
 @admin_bp.route('/request_management',methods=['POST','GET'])
+@login_required
 def request_management():
     user_query = User.query
     user_register_count = User.query.filter_by(status=2).count()

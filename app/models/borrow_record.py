@@ -34,11 +34,6 @@ class BorrowRecord(db.Model):
     renew_times = db.Column(db.Integer, default=0, comment='续借次数')
     last_renew_date = db.Column(db.DateTime, comment='最后续借日期')
 
-    # ========== 罚款信息字段 ==========
-    fine_amount = db.Column(db.Numeric(10, 2), default=0, comment='罚款金额')
-    fine_paid = db.Column(db.Boolean, default=False, comment='罚款是否已支付')
-    fine_paid_date = db.Column(db.DateTime, comment='罚款支付日期')
-
     # ========== 时间字段 ==========
     created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,

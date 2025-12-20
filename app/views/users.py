@@ -16,7 +16,22 @@ from app.models import User,Admin,Book,Category,BorrowRecord,Favorite
 
 users_bp = Blueprint('users', __name__,template_folder='templates/users')
 
+def login_required(f):
+    """
+    简单的登录验证装饰器
+    仅检查session中是否有user_id
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # 检查session中是否有user_id
+        if 'user_id' not in session:
+            # 重定向到登录页面，并传递当前URL作为next参数
+            return redirect(url_for('auth.login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @users_bp.route('/dashboard',methods=['POST','GET'])
+@login_required
 def dashboard():
 
     soon_book = 0
@@ -43,6 +58,7 @@ def dashboard():
                            )
 
 @users_bp.route('/borrowing',methods=['POST','GET'])
+@login_required
 def borrowing():
     user = User.query.get(session.get('user_id'))
     borrow_history = user.get_borrow_history()
@@ -54,6 +70,7 @@ def borrowing():
                            )
 
 @users_bp.route('/search',methods=['POST','GET'])
+@login_required
 def search():
     user_id = get_current_user().id
     # 获取所有分类
@@ -102,6 +119,7 @@ def search():
                            )
 
 @users_bp.route('/favorites',methods=['POST','GET'])
+@login_required
 def favorites():
     user = get_current_user()
     if not user:
@@ -545,6 +563,7 @@ def my_favorite():
         }), 500
 
 @users_bp.route('/my_profile', methods=['POST','GET'])
+@login_required
 def my_profile():
     profile_form = ProfileForm()
     current_user = get_current_user()
@@ -594,5 +613,6 @@ def delete_book():
     db.session.delete(borrow_record)
     db.session.commit()
     return jsonify({'success':True,'message':'删除成功'})
+
 def get_current_user():
     return User.query.get(session.get('user_id'))
