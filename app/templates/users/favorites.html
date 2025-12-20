@@ -117,10 +117,12 @@
                                 <!-- 分类标签 -->
                                 <div class="mb-2">
                                     <span class="badge bg-light text-dark">{{ favorites_book.book.publisher }}</span>
-                                    {% if favorites_book.book.available_copies > 0 %}
+                                    {% if borrow_query.filter_by(user_id=user_id,book_id=favorites_book.book.id,status='3').first()%}
+                                    <span class="badge bg-warning ms-1">审核中</span>
+                                    {% elif borrow_query.filter_by(user_id=user_id,book_id=favorites_book.book.id,status='0').first()%}
+                                    <span class="badge bg-warning ms-1">借阅中</span>
+                                     {% elif favorites_book.book.available_copies > 0 %}
                                     <span class="badge bg-success ms-1">可借阅</span>
-                                    {% else %}
-                                    <span class="badge bg-warning ms-1">已借出</span>
                                     {% endif %}
                                 </div>
                                 
